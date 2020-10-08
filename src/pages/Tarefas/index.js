@@ -25,10 +25,23 @@ const Tarefas = () => {
 
   const loadTasks = useCallback(
     async () => {
-      // const response = await api.get(`tarefas`);
-      // setTasks(response.data);
-    },[],
-  );
+      try {
+        const response = await firebase.firestore().collection('tarefas').get();
+        
+        const temp = [];
+
+        response.forEach(doc => {
+          // console.log(doc.id, '=>', doc.data());
+          temp.push({id: doc.id, ...doc.data()});
+        })
+
+        console.log(temp);
+
+        setTasks(temp);
+      } catch (error) {
+        console.log('error loadTasks', error);
+      }
+  },[]);
 
   useEffect(() => {
     loadTasks();
@@ -61,12 +74,10 @@ const Tarefas = () => {
 
   const handleTask = useCallback(
     async (task) => {
-      const params = {
+      await firebase.firestore().collection('tarefas').doc(task.id).set({
         ...task,
         concluido: !task.concluido
-      }
-  
-      // await api.put(`tarefas/${task.id}`, params);
+      },{merge: true});
   
       loadTasks();
     },[loadTasks],
