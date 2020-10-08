@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import api from '../../services/api';
 
 import { 
   Container,
@@ -16,6 +15,9 @@ import {
   ErroMessage
 } from './styles';
 
+import firebase from 'firebase';
+import 'firebase/firestore';
+
 const Tarefas = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
@@ -23,8 +25,8 @@ const Tarefas = () => {
 
   const loadTasks = useCallback(
     async () => {
-      const response = await api.get(`tarefas`);
-      setTasks(response.data);
+      // const response = await api.get(`tarefas`);
+      // setTasks(response.data);
     },[],
   );
 
@@ -41,13 +43,11 @@ const Tarefas = () => {
 
       setErrorMessage("");
 
-      const params = {
-        descricao: newTask,
-        concluido: false
-      };
-
       try {
-        await api.post(`tarefas`, params);  
+        await firebase.firestore().collection('tarefas').add({
+          descricao: newTask,
+          concluido: false
+        });
         
         loadTasks();
         setNewTask("");
@@ -66,7 +66,7 @@ const Tarefas = () => {
         concluido: !task.concluido
       }
   
-      await api.put(`tarefas/${task.id}`, params);
+      // await api.put(`tarefas/${task.id}`, params);
   
       loadTasks();
     },[loadTasks],
@@ -74,7 +74,7 @@ const Tarefas = () => {
 
   const removeTask = useCallback(
     async (task) => {
-      await api.delete(`tarefas/${task.id}`);
+      // await api.delete(`tarefas/${task.id}`);
 
       loadTasks();
     },[loadTasks],

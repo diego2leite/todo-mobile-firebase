@@ -15,7 +15,7 @@ const AuthProvider = ({ children }) => {
   const [data, setData] = useState({});
 
   const onAuthStateChanged = useCallback((userState) => {
-      console.log("firebase user", userState);
+      // console.log("firebase user", userState);
       setData({
         user: userState
       })
