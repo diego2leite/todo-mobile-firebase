@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "chat-mobile",
-    "slug": "chat-mobile",
+    "name": "todo-mobile-firebase",
+    "slug": "todo-mobile-firebase",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
