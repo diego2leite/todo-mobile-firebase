@@ -5,57 +5,65 @@ import React, {
   useContext,
   useEffect
 } from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
 
-import api from '../services/api';
-
+import firebase from 'firebase';
+import 'firebase/auth';
 
 const AuthContext = createContext({});
 
 const AuthProvider = ({ children }) => {
   const [data, setData] = useState({});
 
+  const onAuthStateChanged = useCallback((userState) => {
+      console.log("firebase user", userState);
+      setData({
+        user: userState
+      })
+  },[]);
+
   useEffect(() => {
-    async function loadData() {
-      const user = await AsyncStorage.getItem('@TODO:user');
-      // console.log("AuthProvider user", user);
+    const unsubscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
+    return () => unsubscriber(); // unsubscribe on unmount
+  }, [onAuthStateChanged]);
 
-      if(user){
-        setData({ user: JSON.parse(user) })
-      }
-    }
-
-    loadData();
-  }, [])
+  const signUp = useCallback(async ({ email, password }) => {
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(resp => {
+        console.log('firebase user created');
+      })
+      .catch(error => {
+        console.log('firebase signUp error', error);
+      })
+  }, []);
 
   const signIn = useCallback(async ({ email, password }) => {
-    const response = await api.get('usuarios');
-    console.log("usuarios", response);
-
-    const user = response.data.filter(data => {
-      console.log("data", data.email, email);
-      return (data.email === email && data.password === password);
-    });
-
-    console.log("user", user);
-
-    if(user.length > 0){
-      await AsyncStorage.setItem('@TODO:user', JSON.stringify(user[0]));
-      setData({ user: user[0] });
-    }else{
-      throw new Error('Usuário ou senha inválido');
-    }
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(resp => {
+        console.log('firebase signed in');
+      }).catch(error => {
+        console.log('firebase signIn error', error);
+      })
   }, []);
 
   const signOut = useCallback(async () => {
-    await AsyncStorage.removeItem('@TODO:user');
-
-    setData({});
+    firebase 
+      .auth()
+      .signOut()
+      .then(resp => {
+        console.log("signed out");
+      })
+      .catch(error => {
+        console.log('firebase signOut error', error);
+      })
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user: data.user, signIn, signOut }}
+      value={{ user: data.user, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

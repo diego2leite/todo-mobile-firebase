@@ -7,7 +7,7 @@ import logoImg from '../../assets/logo.png';
 import { Container, Input, Button, ButtonText } from './styles';
 
 const Login = () => {
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -23,6 +23,29 @@ const Login = () => {
 
     try {
       await signIn({
+        email: email,
+        password: password,
+      });
+
+    } catch (error) {
+      console.log(error);
+      console.log("Usuário ou senha não confere.");
+
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function createUser() {
+    if(!email) return;
+    if(!password) return;
+    
+    setLoading(true);
+
+    console.log("submit", email, password);
+
+    try {
+      await signUp({
         email: email,
         password: password,
       });
@@ -58,6 +81,14 @@ const Login = () => {
           <ActivityIndicator color="#fff" />
         ):(
           <ButtonText>Acessar</ButtonText>
+        )}
+      </Button>
+
+      <Button onPress={() => createUser()} >
+        { loading ? (
+          <ActivityIndicator color="#fff" />
+        ):(
+          <ButtonText>Cadastrar novo usuário</ButtonText>
         )}
       </Button>
 
