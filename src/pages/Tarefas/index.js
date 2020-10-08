@@ -23,29 +23,19 @@ const Tarefas = () => {
   const [newTask, setNewTask] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const loadTasks = useCallback(
-    async () => {
-      try {
-        const response = await firebase.firestore().collection('tarefas').get();
-        
-        const temp = [];
+  
+  const onTarefasChanged = useCallback(snap => {
+    const data = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
 
-        response.forEach(doc => {
-          // console.log(doc.id, '=>', doc.data());
-          temp.push({id: doc.id, ...doc.data()});
-        })
-
-        console.log(temp);
-
-        setTasks(temp);
-      } catch (error) {
-        console.log('error loadTasks', error);
-      }
-  },[]);
+    console.log('snapshot', data);
+    setTasks(data);
+  }, []);
 
   useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+    const unsubscribe = firebase.firestore().collection('tarefas').onSnapshot(onTarefasChanged);
+
+    return () => unsubscribe();
+  }, []);
 
   const handleAddTask = useCallback(
     async () => {
@@ -62,14 +52,13 @@ const Tarefas = () => {
           concluido: false
         });
         
-        loadTasks();
         setNewTask("");
       } catch (error) {
         console.log("error handleAddTask:", error);
 
         setErrorMessage("Ocorreu um erro ao adicionar tarefa");
       }
-    },[loadTasks, newTask],
+    },[newTask],
   );
 
   const handleTask = useCallback(
@@ -79,8 +68,7 @@ const Tarefas = () => {
         concluido: !task.concluido
       },{merge: true});
   
-      loadTasks();
-    },[loadTasks],
+    },[],
   );
 
   const removeTask = useCallback(
@@ -89,8 +77,7 @@ const Tarefas = () => {
 
       await firebase.firestore().collection('tarefas').doc(task.id).delete();
 
-      loadTasks();
-    },[loadTasks],
+    },[],
   );
 
   return (
