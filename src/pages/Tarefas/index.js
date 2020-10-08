@@ -87,6 +87,8 @@ const Tarefas = () => {
     async (task) => {
       // await api.delete(`tarefas/${task.id}`);
 
+      await firebase.firestore().collection('tarefas').doc(task.id).delete();
+
       loadTasks();
     },[loadTasks],
   );
